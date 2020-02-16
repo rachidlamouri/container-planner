@@ -48,6 +48,10 @@ export default {
       type: Object,
       required: true,
     },
+    fillAllContainers: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -60,6 +64,9 @@ export default {
       this.draw();
     },
     selectedIndex() {
+      this.draw();
+    },
+    fillAllContainers() {
       this.draw();
     },
   },
@@ -106,7 +113,7 @@ export default {
           containerHeight * this.pixelsPerMm - 1,
         ];
         this.ctx.strokeRect(...dimensions);
-        if (index === this.selectedIndex) {
+        if (index === this.selectedIndex || this.fillAllContainers) {
           this.ctx.fillRect(...dimensions);
         }
       });

@@ -34,6 +34,7 @@
   .info {
     display: flex;
     flex-direction: column;
+    margin-bottom: 8px;
     padding-left: 20px;
   }
 </style>

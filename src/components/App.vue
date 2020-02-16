@@ -9,6 +9,7 @@
         :containers="containers"
         :selected-index="selectedIndex"
         :bounding-container="boundingContainer"
+        :fill-all-containers="fillAllContainers"
       />
       <div class="side">
         <new-container-form
@@ -30,6 +31,9 @@
           :bounding-container="boundingContainer"
           :is-plan-valid="isPlanValid"
         />
+        <button @click="toggleFillAllContainers">
+          Toggle Fill
+        </button>
       </div>
     </div>
   </div>
@@ -79,6 +83,23 @@
     font-size: 18px;
     margin-bottom: 4px;
   }
+
+  button {
+    background-color: #eee;
+    border: 1.5px solid transparent;
+    height: 30px;
+    outline: none;
+    width: 100px;
+
+    &:hover {
+      background-color: #ddd;
+      cursor: pointer;
+    }
+
+    &:active {
+      border-color: #ccc;
+    }
+  }
 </style>
 
 <script>
@@ -107,6 +128,7 @@ export default {
       pixelsPerMm: 10,
       selectedIndex: 0,
       containers: [],
+      fillAllContainers: false,
     };
   },
   computed: {
@@ -261,6 +283,9 @@ export default {
     },
     selectLastContainer() {
       this.selectContainer(this.containers.length - 1);
+    },
+    toggleFillAllContainers() {
+      this.fillAllContainers = !this.fillAllContainers;
     },
     updateSelectedContainer(newContainer) {
       this.containers.splice(this.selectedIndex, 1, newContainer);
