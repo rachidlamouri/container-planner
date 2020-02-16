@@ -32,6 +32,10 @@ export default {
       type: Number,
       required: true,
     },
+    boundingContainer: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -69,6 +73,7 @@ export default {
       this.clearCanvas();
       this.drawGrid();
       this.drawContainers();
+      this.drawBoundingContainer();
     },
     clearCanvas() {
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -123,6 +128,23 @@ export default {
           this.ctx.fillRect(...dimensions);
         }
       });
+    },
+    drawBoundingContainer() {
+      this.ctx.strokeStyle = '#0f0';
+
+      const {
+        x,
+        y,
+        width,
+        height,
+      } = this.boundingContainer;
+      const dimensions = [
+        x * this.pixelsPerMm,
+        y * this.pixelsPerMm,
+        width * this.pixelsPerMm,
+        height * this.pixelsPerMm,
+      ];
+      this.ctx.strokeRect(...dimensions);
     },
   },
 };

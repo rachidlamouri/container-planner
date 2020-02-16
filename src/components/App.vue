@@ -5,6 +5,7 @@
       <planner-canvas
         :containers="containers"
         :selected-index="selectedIndex"
+        :bounding-container="boundingContainer"
         @maxDimensions="setMaxDimensions"
       />
       <div class="side">
@@ -114,6 +115,27 @@ export default {
     };
   },
   computed: {
+    boundingContainer() {
+      if (!this.containersExist) {
+        return {};
+      }
+
+      const { x: left } = _.minBy(this.containers, 'x');
+      const { y: top } = _.minBy(this.containers, 'y');
+      const right = _(this.containers)
+        .map(({ x, width }) => x + width)
+        .max();
+      const bottom = _(this.containers)
+        .map(({ y, height }) => y + height)
+        .max();
+
+      return {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+      };
+    },
     containersExist() {
       return this.containers.length > 0;
     },
