@@ -17,9 +17,9 @@
         @click="$emit('selectContainer', index)"
       >
         <span :class="{ invalid: isOutOfBounds || isOverlapping }">{{ padDimension(x) }}</span>,
-        <span :class="{ invalid: isOverlapping }">{{ padDimension(y) }}</span>,
+        <span :class="{ invalid: isOutOfBounds || isOverlapping }">{{ padDimension(y) }}</span>,
         <span :class="{ invalid: isOutOfBounds || isOverlapping }">{{ padDimension(width) }}</span>,
-        <span :class="{ invalid: isOverlapping }">{{ padDimension(height) }}</span>
+        <span :class="{ invalid: isOutOfBounds || isOverlapping }">{{ padDimension(height) }}</span>
       </span>
       <div
         class="delete-container"

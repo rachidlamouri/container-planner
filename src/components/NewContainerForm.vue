@@ -9,6 +9,7 @@
         ref="widthInput"
         v-model.number="inputs.width"
         type="number"
+        @keydown="onKeyDown"
       >
     </div>
     <div>
@@ -17,6 +18,7 @@
         ref="heightInput"
         v-model.number="inputs.height"
         type="number"
+        @keydown="onKeyDown"
       >
     </div>
     <p
@@ -106,6 +108,12 @@ export default {
 
       this.$refs.widthInput.focus();
       this.resetInputs();
+    },
+    onKeyDown({ key }) {
+      if (key.toLowerCase() === 'e') {
+        this.$refs.widthInput.blur();
+        this.$refs.heightInput.blur();
+      }
     },
     resetInputs() {
       this.inputs = {

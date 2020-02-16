@@ -129,6 +129,10 @@ export default {
         case 'd':
           this.moveSelectedContainer('right');
           break;
+        case 'q':
+        case 'e':
+          this.rotateSelectedContainer();
+          break;
         default:
       }
     });
@@ -138,7 +142,7 @@ export default {
       const newContainer = this.createNewContainer(
         this.containers,
         dimensions,
-        this.maxDimensions.width,
+        this.maxDimensions,
       );
       this.containers.push(newContainer);
 
@@ -148,7 +152,9 @@ export default {
       this.replaceColor(color);
       this.containers.splice(index, 1);
 
-      if (index === this.selectedIndex) {
+      if (!this.containersExist) {
+        this.selectedIndex = 0;
+      } else if (index === this.selectedIndex || this.selectedIndex >= this.containers.length) {
         this.selectLastContainer();
       }
     },
@@ -171,6 +177,30 @@ export default {
       this.updateSelectedContainer({
         ...newContainer,
         isOverlapping,
+      });
+    },
+    rotateSelectedContainer() {
+      if (!this.containersExist) {
+        return;
+      }
+
+      const rotatedContainer = {
+        ...this.selectedContainer,
+        ...this.getContainerDimensionsAfterRotation(this.selectedContainer),
+      };
+
+      const isOverlapping = this.getIsContainerOverlapping(
+        this.containers,
+        rotatedContainer,
+        this.selectedIndex,
+      );
+
+      const isOutOfBounds = this.getIsContainerOutOfBounds(rotatedContainer, this.maxDimensions);
+
+      this.updateSelectedContainer({
+        ...rotatedContainer,
+        isOverlapping,
+        isOutOfBounds,
       });
     },
     selectContainer(index) {

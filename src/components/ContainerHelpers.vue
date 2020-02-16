@@ -45,14 +45,14 @@ export default {
     },
   },
   methods: {
-    createNewContainer(containers, dimensions, maxWidth) {
+    createNewContainer(containers, dimensions, maxDimensions) {
       let nextX = (
         _(containers)
           .map(containerToRightEdge)
           .max()
       );
 
-      if (!nextX || nextX >= maxWidth) {
+      if (!nextX || nextX >= maxDimensions.width) {
         nextX = 0;
       }
 
@@ -61,11 +61,19 @@ export default {
         x: nextX,
         y: 0,
         ...dimensions,
-        isOutOfBounds: nextX + dimensions.width > maxWidth,
         isOverlapping: false,
       };
+      newContainer.isOutOfBounds = this.getIsContainerOutOfBounds(newContainer, maxDimensions);
 
       return newContainer;
+    },
+    getContainerDimensionsAfterRotation(container) {
+      const { width, height } = container;
+
+      return {
+        width: height,
+        height: width,
+      };
     },
     getContainerPositionAfterMove(container, direction) {
       const { width, height } = container;
@@ -135,6 +143,12 @@ export default {
           );
         },
         false,
+      );
+    },
+    getIsContainerOutOfBounds(container, maxDimensions) {
+      return (
+        container.x + container.width > maxDimensions.width
+        || container.y + container.height > maxDimensions.height
       );
     },
     replaceColor(color) {
