@@ -3,9 +3,20 @@
     <div class="label">
       <strong>{{ label }}</strong>
     </div>
-    <div class="value">
+    <div
+      v-if="!isInput"
+      class="value"
+    >
       {{ value }}
     </div>
+    <input
+      v-if="isInput"
+      :value="value"
+      class="value"
+      type="number"
+      @input="$emit('input', $event.target.value)"
+      @keydown.e="$event.target.blur()"
+    >
   </div>
 </template>
 
@@ -23,6 +34,13 @@
     margin-right: 8px;
     width: 230px;
   }
+
+  input {
+    padding-left: 4px;
+    padding-right: 4px;
+    text-align: right;
+    width: 40px;
+  }
 </style>
 
 <script>
@@ -33,8 +51,12 @@ export default {
       required: true,
     },
     value: {
-      type: String,
+      type: [String, Number],
       required: true,
+    },
+    isInput: {
+      type: Boolean,
+      default: false,
     },
   },
 };

@@ -17,6 +17,11 @@
         :value="`${maxContainerDimensions.width} mm, ${maxContainerDimensions.height} mm`"
       />
       <label-value-group
+        v-model.number="tolerance"
+        :is-input="true"
+        label="Tolerance:"
+      />
+      <label-value-group
         :class="{ invalid: !isPlanValid }"
         label="Container Inner Dimensions:"
         :value="boundingContainerDisplayDimensions"
@@ -63,12 +68,17 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      tolerance: 0,
+    };
+  },
   computed: {
     boundingContainerDisplayDimensions() {
-      const width = _.get(this.boundingContainer, 'width', '0');
-      const height = _.get(this.boundingContainer, 'height', '0');
+      const width = _.get(this.boundingContainer, 'width', 0) + this.tolerance;
+      const height = _.get(this.boundingContainer, 'height', 0) + this.tolerance;
 
-      return `${width}mm, ${height}mm`;
+      return `${width} mm, ${height} mm`;
     },
   },
 };
