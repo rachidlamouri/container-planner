@@ -3,21 +3,32 @@
     <h1>Container Planner</h1>
     <div class="editor">
       <planner-canvas
+        :canvas-dimensions="canvasDimensions"
+        :pixels-per-mm="pixelsPerMm"
+        :max-container-dimensions="maxContainerDimensions"
         :containers="containers"
         :selected-index="selectedIndex"
         :bounding-container="boundingContainer"
-        @maxDimensions="setMaxDimensions"
       />
       <div class="side">
         <new-container-form
+          class="section"
           :is-out-of-colors="isOutOfColors"
-          :max-dimensions="maxDimensions"
+          :max-container-dimensions="maxContainerDimensions"
           @addContainer="addContainer"
         />
         <container-list
+          class="section"
           :containers="containers"
           @selectContainer="selectContainer"
           @deleteContainer="deleteContainer"
+        />
+        <computed-info
+          :canvas-dimensions="canvasDimensions"
+          :pixels-per-mm="pixelsPerMm"
+          :max-container-dimensions="maxContainerDimensions"
+          :bounding-container="boundingContainer"
+          :is-plan-valid="isPlanValid"
         />
       </div>
     </div>
@@ -33,11 +44,14 @@
 
   * {
     box-sizing: border-box;
-    color: #333;
     font-family: sans-serif;
     font-size: 14px;
     margin: 0;
     padding: 0;
+  }
+
+  html {
+    color: #333;
   }
 
   body {
@@ -57,6 +71,10 @@
     flex-direction: column;
   }
 
+  .section {
+    margin-bottom: 16px;
+  }
+
   .section-title {
     font-size: 18px;
     margin-bottom: 4px;
@@ -69,6 +87,7 @@ import ContainerList from './ContainerList.vue';
 import NewContainerForm from './NewContainerForm.vue';
 import PlannerCanvas from './PlannerCanvas.vue';
 import ContainerHelpers from './ContainerHelpers.vue';
+import ComputedInfo from './ComputedInfo.vue';
 
 export default {
   name: 'App',
@@ -76,13 +95,18 @@ export default {
     ContainerList,
     NewContainerForm,
     PlannerCanvas,
+    ComputedInfo,
   },
   mixins: [ContainerHelpers],
   data() {
     return {
+      canvasDimensions: {
+        width: 1200,
+        height: 800,
+      },
+      pixelsPerMm: 10,
       selectedIndex: 0,
       containers: [],
-      maxDimensions: {},
     };
   },
   computed: {
@@ -109,6 +133,17 @@ export default {
     },
     containersExist() {
       return this.containers.length > 0;
+    },
+    isPlanValid() {
+      return this.containers.every(
+        ({ isOverlapping, isOutOfBounds }) => !isOverlapping && !isOutOfBounds,
+      );
+    },
+    maxContainerDimensions() {
+      return {
+        width: this.canvasDimensions.width / this.pixelsPerMm,
+        height: this.canvasDimensions.height / this.pixelsPerMm,
+      };
     },
     selectedContainer() {
       return this.containers[this.selectedIndex];
@@ -142,7 +177,7 @@ export default {
       const newContainer = this.createNewContainer(
         this.containers,
         dimensions,
-        this.maxDimensions,
+        this.maxContainerDimensions,
       );
       this.containers.push(newContainer);
 
@@ -163,19 +198,23 @@ export default {
         return;
       }
 
-      const newContainer = {
+      const repositionedContainer = {
         ...this.selectedContainer,
-        ...this.getContainerPositionAfterMove(this.selectedContainer, direction),
+        ...this.getContainerPositionAfterMove(
+          this.selectedContainer,
+          direction,
+          this.maxContainerDimensions,
+        ),
       };
 
       const isOverlapping = this.getIsContainerOverlapping(
         this.containers,
-        newContainer,
+        repositionedContainer,
         this.selectedIndex,
       );
 
       this.updateSelectedContainer({
-        ...newContainer,
+        ...repositionedContainer,
         isOverlapping,
       });
     },
@@ -195,7 +234,10 @@ export default {
         this.selectedIndex,
       );
 
-      const isOutOfBounds = this.getIsContainerOutOfBounds(rotatedContainer, this.maxDimensions);
+      const isOutOfBounds = this.getIsContainerOutOfBounds(
+        rotatedContainer,
+        this.maxContainerDimensions,
+      );
 
       this.updateSelectedContainer({
         ...rotatedContainer,
@@ -219,9 +261,6 @@ export default {
     },
     selectLastContainer() {
       this.selectContainer(this.containers.length - 1);
-    },
-    setMaxDimensions(maxDimensions) {
-      this.maxDimensions = maxDimensions;
     },
     updateSelectedContainer(newContainer) {
       this.containers.splice(this.selectedIndex, 1, newContainer);

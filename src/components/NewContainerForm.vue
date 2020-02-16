@@ -3,23 +3,25 @@
     <p class="section-title">
       New Container
     </p>
-    <div>
-      <label>Width</label>
-      <input
-        ref="widthInput"
-        v-model.number="inputs.width"
-        type="number"
-        @keydown="onKeyDown"
-      >
-    </div>
-    <div>
-      <label>Height</label>
-      <input
-        ref="heightInput"
-        v-model.number="inputs.height"
-        type="number"
-        @keydown="onKeyDown"
-      >
+    <div class="body">
+      <div class="group">
+        <label>Width</label>
+        <input
+          ref="widthInput"
+          v-model.number="inputs.width"
+          type="number"
+          @keydown="onKeyDown"
+        >
+      </div>
+      <div class="group">
+        <label>Height</label>
+        <input
+          ref="heightInput"
+          v-model.number="inputs.height"
+          type="number"
+          @keydown="onKeyDown"
+        >
+      </div>
     </div>
     <p
       v-if="errorMessage"
@@ -32,9 +34,11 @@
 
 <style lang="scss" scoped>
   form {
-    margin-bottom: 8px;
+    .body {
+      padding-left: 20px;
+    }
 
-    > div {
+    .group {
       align-items: center;
       display: flex;
       margin-bottom: 8px;
@@ -74,7 +78,7 @@ export default {
       type: Boolean,
       required: true,
     },
-    maxDimensions: {
+    maxContainerDimensions: {
       type: Object,
       required: true,
     },
@@ -136,10 +140,10 @@ export default {
           },
         );
 
-        if (this.inputs.width > this.maxDimensions.width) {
+        if (this.inputs.width > this.maxContainerDimensions.width) {
           throw new Error('width is too big');
         }
-        if (this.inputs.height > this.maxDimensions.height) {
+        if (this.inputs.height > this.maxContainerDimensions.height) {
           throw new Error('height is too big');
         }
 

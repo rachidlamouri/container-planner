@@ -1,7 +1,7 @@
 <template>
   <div>
     <p class="section-title">
-      Containers:
+      Containers
     </p>
     <div
       v-for="({ color, x, y, width, height, isOutOfBounds, isOverlapping }, index) in containers"
@@ -35,7 +35,7 @@
   .dimension-tuple {
     align-items: center;
     display: flex;
-    margin-left: 20px;
+    padding-left: 20px;
 
     .color-swatch {
       height: 10px;

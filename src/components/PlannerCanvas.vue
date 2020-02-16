@@ -3,8 +3,8 @@
   <div class="canvas-wrapper">
     <canvas
       ref="canvas"
-      width="1200"
-      height="800"
+      :width="1200"
+      :height="800"
     />
   </div>
 </template>
@@ -24,6 +24,18 @@ import _ from 'lodash';
 
 export default {
   props: {
+    canvasDimensions: {
+      type: Object,
+      required: true,
+    },
+    pixelsPerMm: {
+      type: Number,
+      required: true,
+    },
+    maxContainerDimensions: {
+      type: Object,
+      required: true,
+    },
     containers: {
       type: Array,
       required: true,
@@ -41,16 +53,7 @@ export default {
     return {
       backgroundCanvas: document.createElement('canvas'),
       ctx: null,
-      pixelsPerMm: 10,
     };
-  },
-  computed: {
-    canvasWidth() {
-      return this.$refs.canvas.width;
-    },
-    canvasHeight() {
-      return this.$refs.canvas.height;
-    },
   },
   watch: {
     containers() {
@@ -61,16 +64,11 @@ export default {
     },
   },
   mounted() {
-    this.$emit('maxDimensions', {
-      width: this.canvasWidth / this.pixelsPerMm,
-      height: this.canvasHeight / this.pixelsPerMm,
-    });
-
     this.ctx = this.$refs.canvas.getContext('2d');
     this.ctx.lineWidth = 1;
 
-    this.backgroundCanvas.width = this.$refs.canvas.width;
-    this.backgroundCanvas.height = this.$refs.canvas.height;
+    this.backgroundCanvas.width = this.canvasDimensions.width;
+    this.backgroundCanvas.height = this.canvasDimensions.height;
     this.saveGrid();
 
     this.draw();
@@ -83,7 +81,7 @@ export default {
       this.drawBoundingContainer();
     },
     clearCanvas() {
-      this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+      this.ctx.clearRect(0, 0, this.canvasDimensions.width, this.canvasDimensions.height);
     },
     drawGrid() {
       this.ctx.drawImage(this.backgroundCanvas, 0, 0);
@@ -131,8 +129,8 @@ export default {
       this.ctx.strokeRect(...dimensions);
     },
     saveGrid() {
-      const shadedGridCellCount = this.canvasWidth / this.pixelsPerMm / 2;
-      const rowCount = this.canvasHeight / this.pixelsPerMm;
+      const shadedGridCellCount = this.maxContainerDimensions.width / 2;
+      const rowCount = this.maxContainerDimensions.height;
 
       const backgroundCtx = this.backgroundCanvas.getContext('2d');
 

@@ -45,14 +45,14 @@ export default {
     },
   },
   methods: {
-    createNewContainer(containers, dimensions, maxDimensions) {
+    createNewContainer(containers, dimensions, maxContainerDimensions) {
       let nextX = (
         _(containers)
           .map(containerToRightEdge)
           .max()
       );
 
-      if (!nextX || nextX >= maxDimensions.width) {
+      if (!nextX || nextX >= maxContainerDimensions.width) {
         nextX = 0;
       }
 
@@ -63,7 +63,10 @@ export default {
         ...dimensions,
         isOverlapping: false,
       };
-      newContainer.isOutOfBounds = this.getIsContainerOutOfBounds(newContainer, maxDimensions);
+      newContainer.isOutOfBounds = this.getIsContainerOutOfBounds(
+        newContainer,
+        maxContainerDimensions,
+      );
 
       return newContainer;
     },
@@ -75,7 +78,7 @@ export default {
         height: width,
       };
     },
-    getContainerPositionAfterMove(container, direction) {
+    getContainerPositionAfterMove(container, direction, maxContainerDimensions) {
       const { width, height } = container;
       let { x, y, isOutOfBounds } = container;
 
@@ -86,18 +89,18 @@ export default {
           }
           break;
         case 'down':
-          if (y + height < this.maxDimensions.height) {
+          if (y + height < maxContainerDimensions.height) {
             y += 1;
           }
           break;
         case 'left':
           if (x > 0) {
             x -= 1;
-            isOutOfBounds = x + width > this.maxDimensions.width;
+            isOutOfBounds = x + width > maxContainerDimensions.width;
           }
           break;
         case 'right':
-          if (x + width < this.maxDimensions.width) {
+          if (x + width < maxContainerDimensions.width) {
             x += 1;
           }
           break;
@@ -145,10 +148,10 @@ export default {
         false,
       );
     },
-    getIsContainerOutOfBounds(container, maxDimensions) {
+    getIsContainerOutOfBounds(container, maxContainerDimensions) {
       return (
-        container.x + container.width > maxDimensions.width
-        || container.y + container.height > maxDimensions.height
+        container.x + container.width > maxContainerDimensions.width
+        || container.y + container.height > maxContainerDimensions.height
       );
     },
     replaceColor(color) {
