@@ -3,8 +3,8 @@
   <div class="canvas-wrapper">
     <canvas
       ref="canvas"
-      :width="1200"
-      :height="800"
+      :width="canvasDimensions.width"
+      :height="canvasDimensions.height"
     />
   </div>
 </template>
