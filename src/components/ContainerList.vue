@@ -4,7 +4,7 @@
       Containers:
     </p>
     <div
-      v-for="({ color, x, y, width, height}, index) in containers"
+      v-for="({ color, x, y, width, height, isOutOfBounds, isOverlapping }, index) in containers"
       :key="index"
       class="dimension-tuple"
     >
@@ -16,10 +16,10 @@
         class="info"
         @click="$emit('selectContainer', index)"
       >
-        {{ padDimension(x) }},
-        {{ padDimension(y) }},
-        {{ padDimension(width) }},
-        {{ padDimension(height) }}
+        <span :class="{ invalid: isOutOfBounds || isOverlapping }">{{ padDimension(x) }}</span>,
+        <span :class="{ invalid: isOverlapping }">{{ padDimension(y) }}</span>,
+        <span :class="{ invalid: isOutOfBounds || isOverlapping }">{{ padDimension(width) }}</span>,
+        <span :class="{ invalid: isOverlapping }">{{ padDimension(height) }}</span>
       </span>
       <div
         class="delete-container"
@@ -45,6 +45,10 @@
 
     .info {
       cursor: pointer;
+
+      .invalid {
+        color: #CC0000;
+      }
 
       &:hover {
         background-color: #ccc;

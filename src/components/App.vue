@@ -154,9 +154,12 @@ export default {
         x: nextX,
         y: 0,
         ...dimensions,
+        isOutOfBounds: nextX + dimensions.width > this.maxDimensions.width,
+        isOverlapping: false,
       });
 
       this.selectLastContainer();
+      this.moveSelectedContainer('no-op');
     },
     deleteContainer({ index, color }) {
       this.colors.push(color);
@@ -186,6 +189,7 @@ export default {
         case 'left':
           if (container.x > 0) {
             container.x -= 1;
+            container.isOutOfBounds = container.x + container.width > this.maxDimensions.width;
           }
           break;
         case 'right':
@@ -195,6 +199,39 @@ export default {
           break;
         default:
       }
+
+      const {
+        x: containerLeft,
+        y: containerTop,
+        width: containerWidth,
+        height: containerHeight,
+      } = container;
+      const containerRight = containerLeft + containerWidth;
+      const containerBottom = containerTop + containerHeight;
+      container.isOverlapping = this.containers.reduce(
+        (isOverlapping, nextContainer, index) => {
+          if (isOverlapping || index === this.selectedIndex) {
+            return isOverlapping;
+          }
+
+          const {
+            x: left,
+            y: top,
+            width,
+            height,
+          } = nextContainer;
+          const right = left + width;
+          const bottom = top + height;
+
+          return (
+            containerRight > left
+            && containerLeft < right
+            && containerBottom > top
+            && containerTop < bottom
+          );
+        },
+        false,
+      );
 
       this.containers.splice(this.selectedIndex, 1, container);
     },
