@@ -39,6 +39,7 @@ export default {
   },
   data() {
     return {
+      backgroundCanvas: document.createElement('canvas'),
       ctx: null,
       pixelsPerMm: 10,
     };
@@ -64,8 +65,14 @@ export default {
       width: this.canvasWidth / this.pixelsPerMm,
       height: this.canvasHeight / this.pixelsPerMm,
     });
+
     this.ctx = this.$refs.canvas.getContext('2d');
     this.ctx.lineWidth = 1;
+
+    this.backgroundCanvas.width = this.$refs.canvas.width;
+    this.backgroundCanvas.height = this.$refs.canvas.height;
+    this.saveGrid();
+
     this.draw();
   },
   methods: {
@@ -79,30 +86,7 @@ export default {
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     },
     drawGrid() {
-      const shadedGridCellCount = this.canvasWidth / this.pixelsPerMm / 2;
-      const rowCount = this.canvasHeight / this.pixelsPerMm;
-
-      const gridColor = '#efefef';
-      this.ctx.strokeStyle = gridColor;
-      this.ctx.fillStyle = gridColor;
-      _.range(shadedGridCellCount).forEach((xIndex) => {
-        _.range(rowCount).forEach((yIndex) => {
-          this.ctx.beginPath();
-
-          const isEvenRow = yIndex % 2 === 0;
-          const xStagger = isEvenRow ? this.pixelsPerMm : 0;
-
-          const dimensions = [
-            xStagger + xIndex * 2 * this.pixelsPerMm + 0.5,
-            yIndex * this.pixelsPerMm + 0.5,
-            this.pixelsPerMm - 1,
-            this.pixelsPerMm - 1,
-          ];
-
-          this.ctx.strokeRect(...dimensions);
-          this.ctx.fillRect(...dimensions);
-        });
-      });
+      this.ctx.drawImage(this.backgroundCanvas, 0, 0);
     },
     drawContainers() {
       this.containers.forEach((container, index) => {
@@ -145,6 +129,34 @@ export default {
         height * this.pixelsPerMm,
       ];
       this.ctx.strokeRect(...dimensions);
+    },
+    saveGrid() {
+      const shadedGridCellCount = this.canvasWidth / this.pixelsPerMm / 2;
+      const rowCount = this.canvasHeight / this.pixelsPerMm;
+
+      const backgroundCtx = this.backgroundCanvas.getContext('2d');
+
+      const gridColor = '#efefef';
+      backgroundCtx.strokeStyle = gridColor;
+      backgroundCtx.fillStyle = gridColor;
+      _.range(shadedGridCellCount).forEach((xIndex) => {
+        _.range(rowCount).forEach((yIndex) => {
+          backgroundCtx.beginPath();
+
+          const isEvenRow = yIndex % 2 === 0;
+          const xStagger = isEvenRow ? this.pixelsPerMm : 0;
+
+          const dimensions = [
+            xStagger + xIndex * 2 * this.pixelsPerMm + 0.5,
+            yIndex * this.pixelsPerMm + 0.5,
+            this.pixelsPerMm - 1,
+            this.pixelsPerMm - 1,
+          ];
+
+          backgroundCtx.strokeRect(...dimensions);
+          backgroundCtx.fillRect(...dimensions);
+        });
+      });
     },
   },
 };
