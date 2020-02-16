@@ -1,15 +1,21 @@
 <template>
-  <canvas
-    ref="canvas"
-    width="600"
-    height="400"
-  />
+  <!-- wrapping canvas in a div to prevent stretching -->
+  <div class="canvas-wrapper">
+    <canvas
+      ref="canvas"
+      width="600"
+      height="400"
+    />
+  </div>
 </template>
 
 <style lang="scss" scoped>
+  .canvas-wrapper {
+    margin-right: 20px;
+  }
+
   canvas {
     border: 1px solid #ccc;
-    margin-right: 20px;
   }
 </style>
 
@@ -20,6 +26,10 @@ export default {
       type: Array,
       required: true,
     },
+    selectedIndex: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     return {
@@ -28,6 +38,9 @@ export default {
   },
   watch: {
     containers() {
+      this.draw();
+    },
+    selectedIndex() {
       this.draw();
     },
   },
@@ -43,7 +56,7 @@ export default {
         height: canvasHeight,
       } = this.$refs.canvas;
       this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      this.containers.forEach((container) => {
+      this.containers.forEach((container, index) => {
         const {
           color,
           x,
@@ -53,7 +66,13 @@ export default {
         } = container;
         this.ctx.beginPath();
         this.ctx.strokeStyle = color;
-        this.ctx.strokeRect(x + 0.5, y + 0.5, containerWidth - 1, containerHeight - 1);
+        this.ctx.fillStyle = color;
+
+        const dimensions = [x + 0.5, y + 0.5, containerWidth - 1, containerHeight - 1];
+        this.ctx.strokeRect(...dimensions);
+        if (index === this.selectedIndex) {
+          this.ctx.fillRect(...dimensions);
+        }
       });
     },
   },

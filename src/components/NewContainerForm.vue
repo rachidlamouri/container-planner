@@ -30,6 +30,8 @@
 
 <style lang="scss" scoped>
   form {
+    margin-bottom: 8px;
+
     > div {
       align-items: center;
       display: flex;

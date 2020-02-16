@@ -12,7 +12,10 @@
         class="color-swatch"
         :style="{ 'background-color': color }"
       />
-      <span>
+      <span
+        class="info"
+        @click="$emit('selectContainer', index)"
+      >
         {{ padDimension(x) }},
         {{ padDimension(y) }},
         {{ padDimension(width) }},
@@ -38,6 +41,14 @@
       height: 10px;
       margin-right: 4px;
       width: 10px;
+    }
+
+    .info {
+      cursor: pointer;
+
+      &:hover {
+        background-color: #ccc;
+      }
     }
 
     .delete-container {

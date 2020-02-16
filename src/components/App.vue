@@ -4,6 +4,7 @@
     <div class="editor">
       <planner-canvas
         :containers="containers"
+        :selected-index="selectedIndex"
       />
       <div class="side">
         <new-container-form
@@ -12,6 +13,7 @@
         />
         <container-list
           :containers="containers"
+          @selectContainer="selectContainer"
           @deleteContainer="deleteContainer"
         />
       </div>
@@ -31,6 +33,12 @@
     color: #333;
     font-family: sans-serif;
     font-size: 14px;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    padding: 8px;
   }
 
   h1 {
@@ -67,6 +75,7 @@ export default {
   },
   data() {
     return {
+      selectedIndex: 0,
       containers: [],
       colors: Object.values({
         aqua: '#00ffff',
@@ -101,6 +110,30 @@ export default {
       }),
     };
   },
+  computed: {
+    containersExist() {
+      return this.containers.length > 0;
+    },
+  },
+  mounted() {
+    document.addEventListener('keydown', ({ key }) => {
+      switch (key) {
+        case 'w':
+          this.moveSelectedContainer('up');
+          break;
+        case 'a':
+          this.moveSelectedContainer('left');
+          break;
+        case 's':
+          this.moveSelectedContainer('down');
+          break;
+        case 'd':
+          this.moveSelectedContainer('right');
+          break;
+        default:
+      }
+    });
+  },
   methods: {
     addContainer(dimensions) {
       const nextX = (
@@ -115,10 +148,46 @@ export default {
         y: 0,
         ...dimensions,
       });
+
+      this.selectLastContainer();
     },
     deleteContainer({ index, color }) {
       this.colors.push(color);
       this.containers.splice(index, 1);
+
+      if (index === this.selectedIndex) {
+        this.selectLastContainer();
+      }
+    },
+    moveSelectedContainer(direction) {
+      if (!this.containersExist) {
+        return;
+      }
+
+      const container = this.containers[this.selectedIndex];
+      switch (direction) {
+        case 'up':
+          container.y -= 1;
+          break;
+        case 'down':
+          container.y += 1;
+          break;
+        case 'left':
+          container.x -= 1;
+          break;
+        case 'right':
+          container.x += 1;
+          break;
+        default:
+      }
+
+      this.containers.splice(this.selectedIndex, 1, container);
+    },
+    selectContainer(index) {
+      this.selectedIndex = index;
+    },
+    selectLastContainer() {
+      this.selectContainer(this.containers.length - 1);
     },
   },
 };
