@@ -10,7 +10,7 @@
       />
       <div class="side">
         <new-container-form
-          :out-of-colors="colors.length === 0"
+          :is-out-of-colors="isOutOfColors"
           :max-dimensions="maxDimensions"
           @addContainer="addContainer"
         />
@@ -68,6 +68,7 @@ import _ from 'lodash';
 import ContainerList from './ContainerList.vue';
 import NewContainerForm from './NewContainerForm.vue';
 import PlannerCanvas from './PlannerCanvas.vue';
+import ContainerHelpers from './ContainerHelpers.vue';
 
 export default {
   name: 'App',
@@ -76,42 +77,12 @@ export default {
     NewContainerForm,
     PlannerCanvas,
   },
+  mixins: [ContainerHelpers],
   data() {
     return {
       selectedIndex: 0,
       containers: [],
       maxDimensions: {},
-      colors: Object.values({
-        aqua: '#00ffff',
-        brown: '#a52a2a',
-        darkblue: '#00008b',
-        darkcyan: '#008b8b',
-        darkgrey: '#a9a9a9',
-        darkgreen: '#006400',
-        darkkhaki: '#bdb76b',
-        darkmagenta: '#8b008b',
-        darkolivegreen: '#556b2f',
-        darkorange: '#ff8c00',
-        darkorchid: '#9932cc',
-        darkred: '#8b0000',
-        darksalmon: '#e9967a',
-        green: '#008000',
-        indigo: '#4b0082',
-        khaki: '#f0e68c',
-        lightblue: '#add8e6',
-        lightgreen: '#90ee90',
-        lightgrey: '#d3d3d3',
-        lightpink: '#ffb6c1',
-        lime: '#00ff00',
-        maroon: '#800000',
-        navy: '#000080',
-        olive: '#808000',
-        orange: '#ffa500',
-        pink: '#ffc0cb',
-        purple: '#800080',
-        red: '#ff0000',
-        silver: '#c0c0c0',
-      }),
     };
   },
   computed: {
@@ -139,10 +110,13 @@ export default {
     containersExist() {
       return this.containers.length > 0;
     },
+    selectedContainer() {
+      return this.containers[this.selectedIndex];
+    },
   },
   mounted() {
     document.addEventListener('keydown', ({ key }) => {
-      switch (key) {
+      switch (key.toLowerCase()) {
         case 'w':
           this.moveSelectedContainer('up');
           break;
@@ -161,30 +135,17 @@ export default {
   },
   methods: {
     addContainer(dimensions) {
-      let nextX = (
-        _(this.containers)
-          .map(({ x, width }) => x + width)
-          .max()
+      const newContainer = this.createNewContainer(
+        this.containers,
+        dimensions,
+        this.maxDimensions.width,
       );
-
-      if (!nextX || nextX >= this.maxDimensions.width) {
-        nextX = 0;
-      }
-
-      this.containers.push({
-        color: this.colors.shift(),
-        x: nextX,
-        y: 0,
-        ...dimensions,
-        isOutOfBounds: nextX + dimensions.width > this.maxDimensions.width,
-        isOverlapping: false,
-      });
+      this.containers.push(newContainer);
 
       this.selectLastContainer();
-      this.moveSelectedContainer('no-op');
     },
     deleteContainer({ index, color }) {
-      this.colors.push(color);
+      this.replaceColor(color);
       this.containers.splice(index, 1);
 
       if (index === this.selectedIndex) {
@@ -196,75 +157,44 @@ export default {
         return;
       }
 
-      const container = this.containers[this.selectedIndex];
-      switch (direction) {
-        case 'up':
-          if (container.y > 0) {
-            container.y -= 1;
-          }
-          break;
-        case 'down':
-          if (container.y + container.height < this.maxDimensions.height) {
-            container.y += 1;
-          }
-          break;
-        case 'left':
-          if (container.x > 0) {
-            container.x -= 1;
-            container.isOutOfBounds = container.x + container.width > this.maxDimensions.width;
-          }
-          break;
-        case 'right':
-          if (container.x + container.width < this.maxDimensions.width) {
-            container.x += 1;
-          }
-          break;
-        default:
-      }
+      const newContainer = {
+        ...this.selectedContainer,
+        ...this.getContainerPositionAfterMove(this.selectedContainer, direction),
+      };
 
-      const {
-        x: containerLeft,
-        y: containerTop,
-        width: containerWidth,
-        height: containerHeight,
-      } = container;
-      const containerRight = containerLeft + containerWidth;
-      const containerBottom = containerTop + containerHeight;
-      container.isOverlapping = this.containers.reduce(
-        (isOverlapping, nextContainer, index) => {
-          if (isOverlapping || index === this.selectedIndex) {
-            return isOverlapping;
-          }
-
-          const {
-            x: left,
-            y: top,
-            width,
-            height,
-          } = nextContainer;
-          const right = left + width;
-          const bottom = top + height;
-
-          return (
-            containerRight > left
-            && containerLeft < right
-            && containerBottom > top
-            && containerTop < bottom
-          );
-        },
-        false,
+      const isOverlapping = this.getIsContainerOverlapping(
+        this.containers,
+        newContainer,
+        this.selectedIndex,
       );
 
-      this.containers.splice(this.selectedIndex, 1, container);
+      this.updateSelectedContainer({
+        ...newContainer,
+        isOverlapping,
+      });
     },
     selectContainer(index) {
       this.selectedIndex = index;
+
+      const isOverlapping = this.getIsContainerOverlapping(
+        this.containers,
+        this.selectedContainer,
+        this.selectedIndex,
+      );
+
+      this.updateSelectedContainer({
+        ...this.selectedContainer,
+        isOverlapping,
+      });
     },
     selectLastContainer() {
       this.selectContainer(this.containers.length - 1);
     },
     setMaxDimensions(maxDimensions) {
       this.maxDimensions = maxDimensions;
+    },
+    updateSelectedContainer(newContainer) {
+      this.containers.splice(this.selectedIndex, 1, newContainer);
     },
   },
 };

@@ -68,7 +68,7 @@ const formSchema = Joi.object({
 
 export default {
   props: {
-    outOfColors: {
+    isOutOfColors: {
       type: Boolean,
       required: true,
     },
@@ -115,7 +115,7 @@ export default {
     },
     validateForm() {
       try {
-        if (this.outOfColors) {
+        if (this.isOutOfColors) {
           throw new Error('out of colors');
         }
 
