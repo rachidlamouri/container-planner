@@ -72,6 +72,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    maxDimensions: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -123,6 +127,14 @@ export default {
             convert: false,
           },
         );
+
+        if (this.inputs.width > this.maxDimensions.width) {
+          throw new Error('width is too big');
+        }
+        if (this.inputs.height > this.maxDimensions.height) {
+          throw new Error('height is too big');
+        }
+
         this.errorMessage = '';
         return true;
       } catch (error) {

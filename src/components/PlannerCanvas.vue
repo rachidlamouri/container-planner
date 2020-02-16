@@ -56,6 +56,10 @@ export default {
     },
   },
   mounted() {
+    this.$emit('maxDimensions', {
+      width: this.canvasWidth / this.pixelsPerMm,
+      height: this.canvasHeight / this.pixelsPerMm,
+    });
     this.ctx = this.$refs.canvas.getContext('2d');
     this.ctx.lineWidth = 1;
     this.draw();

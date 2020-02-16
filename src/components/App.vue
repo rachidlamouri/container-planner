@@ -5,10 +5,12 @@
       <planner-canvas
         :containers="containers"
         :selected-index="selectedIndex"
+        @maxDimensions="setMaxDimensions"
       />
       <div class="side">
         <new-container-form
           :out-of-colors="colors.length === 0"
+          :max-dimensions="maxDimensions"
           @addContainer="addContainer"
         />
         <container-list
@@ -77,6 +79,7 @@ export default {
     return {
       selectedIndex: 0,
       containers: [],
+      maxDimensions: {},
       colors: Object.values({
         aqua: '#00ffff',
         brown: '#a52a2a',
@@ -136,11 +139,15 @@ export default {
   },
   methods: {
     addContainer(dimensions) {
-      const nextX = (
+      let nextX = (
         _(this.containers)
           .map(({ x, width }) => x + width)
           .max()
-      ) || 0;
+      );
+
+      if (!nextX || nextX >= this.maxDimensions.width) {
+        nextX = 0;
+      }
 
       this.containers.push({
         color: this.colors.shift(),
@@ -167,16 +174,24 @@ export default {
       const container = this.containers[this.selectedIndex];
       switch (direction) {
         case 'up':
-          container.y -= 1;
+          if (container.y > 0) {
+            container.y -= 1;
+          }
           break;
         case 'down':
-          container.y += 1;
+          if (container.y + container.height < this.maxDimensions.height) {
+            container.y += 1;
+          }
           break;
         case 'left':
-          container.x -= 1;
+          if (container.x > 0) {
+            container.x -= 1;
+          }
           break;
         case 'right':
-          container.x += 1;
+          if (container.x + container.width < this.maxDimensions.width) {
+            container.x += 1;
+          }
           break;
         default:
       }
@@ -188,6 +203,9 @@ export default {
     },
     selectLastContainer() {
       this.selectContainer(this.containers.length - 1);
+    },
+    setMaxDimensions(maxDimensions) {
+      this.maxDimensions = maxDimensions;
     },
   },
 };
