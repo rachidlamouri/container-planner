@@ -4,7 +4,7 @@
       Containers:
     </p>
     <div
-      v-for="([color, x, y, width, height], index) in containers"
+      v-for="({ color, x, y, width, height}, index) in containers"
       :key="index"
       class="dimension-tuple"
     >
@@ -64,7 +64,7 @@ export default {
   },
   methods: {
     padDimension(dimension) {
-      return dimension.toString().padStart(2, '0');
+      return dimension.toString().padStart(3, '_');
     },
   },
 };

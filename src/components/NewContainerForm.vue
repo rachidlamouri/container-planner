@@ -95,12 +95,8 @@ export default {
         return;
       }
 
-      this.$emit('addContainer', [
-        0,
-        0,
-        this.inputs.width,
-        this.inputs.height,
-      ]);
+      const { width, height } = this.inputs;
+      this.$emit('addContainer', { width, height });
 
       this.$refs.widthInput.focus();
       this.resetInputs();

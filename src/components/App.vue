@@ -53,6 +53,7 @@
 </style>
 
 <script>
+import _ from 'lodash';
 import ContainerList from './ContainerList.vue';
 import NewContainerForm from './NewContainerForm.vue';
 import PlannerCanvas from './PlannerCanvas.vue';
@@ -102,10 +103,18 @@ export default {
   },
   methods: {
     addContainer(dimensions) {
-      this.containers.push([
-        this.colors.shift(),
+      const nextX = (
+        _(this.containers)
+          .map(({ x, width }) => x + width)
+          .max()
+      ) || 0;
+
+      this.containers.push({
+        color: this.colors.shift(),
+        x: nextX,
+        y: 0,
         ...dimensions,
-      ]);
+      });
     },
     deleteContainer({ index, color }) {
       this.colors.push(color);
