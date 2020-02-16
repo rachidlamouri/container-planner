@@ -3,8 +3,8 @@
   <div class="canvas-wrapper">
     <canvas
       ref="canvas"
-      width="600"
-      height="400"
+      width="1200"
+      height="800"
     />
   </div>
 </template>
@@ -15,11 +15,13 @@
   }
 
   canvas {
-    border: 1px solid #ccc;
+    border: 1px solid #aaa;
   }
 </style>
 
 <script>
+import _ from 'lodash';
+
 export default {
   props: {
     containers: {
@@ -34,7 +36,16 @@ export default {
   data() {
     return {
       ctx: null,
+      pixelsPerMm: 10,
     };
+  },
+  computed: {
+    canvasWidth() {
+      return this.$refs.canvas.width;
+    },
+    canvasHeight() {
+      return this.$refs.canvas.height;
+    },
   },
   watch: {
     containers() {
@@ -51,11 +62,40 @@ export default {
   },
   methods: {
     draw() {
-      const {
-        width: canvasWidth,
-        height: canvasHeight,
-      } = this.$refs.canvas;
-      this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      this.clearCanvas();
+      this.drawGrid();
+      this.drawContainers();
+    },
+    clearCanvas() {
+      this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+    },
+    drawGrid() {
+      const shadedGridCellCount = this.canvasWidth / this.pixelsPerMm / 2;
+      const rowCount = this.canvasHeight / this.pixelsPerMm;
+
+      const gridColor = '#efefef';
+      this.ctx.strokeStyle = gridColor;
+      this.ctx.fillStyle = gridColor;
+      _.range(shadedGridCellCount).forEach((xIndex) => {
+        _.range(rowCount).forEach((yIndex) => {
+          this.ctx.beginPath();
+
+          const isEvenRow = yIndex % 2 === 0;
+          const xStagger = isEvenRow ? this.pixelsPerMm : 0;
+
+          const dimensions = [
+            xStagger + xIndex * 2 * this.pixelsPerMm + 0.5,
+            yIndex * this.pixelsPerMm + 0.5,
+            this.pixelsPerMm - 1,
+            this.pixelsPerMm - 1,
+          ];
+
+          this.ctx.strokeRect(...dimensions);
+          this.ctx.fillRect(...dimensions);
+        });
+      });
+    },
+    drawContainers() {
       this.containers.forEach((container, index) => {
         const {
           color,
@@ -68,7 +108,12 @@ export default {
         this.ctx.strokeStyle = color;
         this.ctx.fillStyle = color;
 
-        const dimensions = [x + 0.5, y + 0.5, containerWidth - 1, containerHeight - 1];
+        const dimensions = [
+          x * this.pixelsPerMm + 0.5,
+          y * this.pixelsPerMm + 0.5,
+          containerWidth * this.pixelsPerMm - 1,
+          containerHeight * this.pixelsPerMm - 1,
+        ];
         this.ctx.strokeRect(...dimensions);
         if (index === this.selectedIndex) {
           this.ctx.fillRect(...dimensions);
