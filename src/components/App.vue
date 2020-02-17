@@ -10,6 +10,7 @@
         :selected-index="selectedIndex"
         :bounding-container="boundingContainer"
         :fill-all-containers="fillAllContainers"
+        :shim-groups="shimGroups"
       />
       <div class="side">
         <new-container-form
@@ -33,6 +34,9 @@
         />
         <button @click="toggleFillAllContainers">
           Toggle Fill
+        </button>
+        <button @click="computeShims">
+          Compute Shims
         </button>
       </div>
     </div>
@@ -88,8 +92,9 @@
     background-color: #eee;
     border: 1.5px solid transparent;
     height: 30px;
+    margin-bottom: 8px;
     outline: none;
-    width: 100px;
+    width: 120px;
 
     &:hover {
       background-color: #ddd;
@@ -129,6 +134,7 @@ export default {
       selectedIndex: 0,
       containers: [],
       fillAllContainers: false,
+      shimGroups: {},
     };
   },
   computed: {
@@ -204,6 +210,87 @@ export default {
       this.containers.push(newContainer);
 
       this.selectLastContainer();
+    },
+    computeShims() {
+      const points = [];
+
+      {
+        const {
+          x,
+          y,
+          width,
+          height,
+        } = this.boundingContainer;
+
+        _.range(height).forEach((rowIndex) => {
+          points.push([]);
+          _.range(width).forEach((colIndex) => {
+            points[rowIndex][colIndex] = {
+              x: x + colIndex,
+              y: y + rowIndex,
+              inContainer: false,
+              group: null,
+            };
+          });
+        });
+      }
+
+      this.containers.forEach((container) => {
+        const {
+          x,
+          y,
+          width,
+          height,
+        } = container;
+
+        _.range(y, y + height).forEach((rowIndex) => {
+          _.range(x, x + width).forEach((colIndex) => {
+            const adjustedRowIndex = rowIndex - this.boundingContainer.y;
+            const adjustedColIndex = colIndex - this.boundingContainer.x;
+            points[adjustedRowIndex][adjustedColIndex].inContainer = true;
+          });
+        });
+      });
+
+      const spreadGroup = (rowIndex, colIndex, groupNumber) => {
+        const row = points[rowIndex];
+
+        if (!row) {
+          return;
+        }
+
+        const point = row[colIndex];
+
+        if (!point || point.inContainer || point.group !== null) {
+          return;
+        }
+
+        point.group = groupNumber;
+        spreadGroup(rowIndex - 1, colIndex, groupNumber); // up
+        spreadGroup(rowIndex + 1, colIndex, groupNumber); // down
+        spreadGroup(rowIndex, colIndex - 1, groupNumber); // left
+        spreadGroup(rowIndex, colIndex + 1, groupNumber); // right
+      };
+
+      let groupCount = 0;
+      _.range(points.length).forEach((rowIndex) => {
+        _.range(points[rowIndex].length).forEach((colIndex) => {
+          const point = points[rowIndex][colIndex];
+
+          if (point.inContainer || point.group !== null) {
+            return;
+          }
+
+          groupCount += 1;
+          spreadGroup(rowIndex, colIndex, groupCount);
+        });
+      });
+
+      this.shimGroups = _(points)
+        .flatten()
+        .filter(({ inContainer }) => !inContainer)
+        .groupBy('group')
+        .value();
     },
     deleteContainer({ index, color }) {
       this.replaceColor(color);
@@ -289,6 +376,7 @@ export default {
     },
     updateSelectedContainer(newContainer) {
       this.containers.splice(this.selectedIndex, 1, newContainer);
+      this.shimGroups = {};
     },
   },
 };

@@ -52,6 +52,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    shimGroups: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -67,6 +71,9 @@ export default {
       this.draw();
     },
     fillAllContainers() {
+      this.draw();
+    },
+    shimGroups() {
       this.draw();
     },
   },
@@ -85,6 +92,7 @@ export default {
       this.clearCanvas();
       this.drawGrid();
       this.drawContainers();
+      this.drawShimGroups();
       this.drawBoundingContainer();
     },
     clearCanvas() {
@@ -134,6 +142,28 @@ export default {
         height * this.pixelsPerMm,
       ];
       this.ctx.strokeRect(...dimensions);
+    },
+    drawShimGroups() {
+      _.forEach(this.shimGroups, (group, groupId) => {
+        const colorNumber = groupId * 2;
+        const color = colorNumber < 10 ? `#${colorNumber}${colorNumber}${colorNumber}` : '#000';
+        this.ctx.strokeStyle = color;
+        this.ctx.fillStyle = color;
+
+        group.forEach((mmPixel) => {
+          const { x, y } = mmPixel;
+
+          const dimensions = [
+            x * this.pixelsPerMm + 0.5,
+            y * this.pixelsPerMm + 0.5,
+            1 * this.pixelsPerMm - 1,
+            1 * this.pixelsPerMm - 1,
+          ];
+
+          this.ctx.strokeRect(...dimensions);
+          this.ctx.fillRect(...dimensions);
+        });
+      });
     },
     saveGrid() {
       const shadedGridCellCount = this.maxContainerDimensions.width / 2;

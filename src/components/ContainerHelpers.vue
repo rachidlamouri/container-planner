@@ -11,7 +11,6 @@ export default {
         brown: '#a52a2a',
         darkblue: '#00008b',
         darkcyan: '#008b8b',
-        darkgrey: '#a9a9a9',
         darkgreen: '#006400',
         darkkhaki: '#bdb76b',
         darkmagenta: '#8b008b',
@@ -25,7 +24,6 @@ export default {
         khaki: '#f0e68c',
         lightblue: '#add8e6',
         lightgreen: '#90ee90',
-        lightgrey: '#d3d3d3',
         lightpink: '#ffb6c1',
         lime: '#00ff00',
         maroon: '#800000',
@@ -35,7 +33,6 @@ export default {
         pink: '#ffc0cb',
         purple: '#800080',
         red: '#ff0000',
-        silver: '#c0c0c0',
       }),
     };
   },
