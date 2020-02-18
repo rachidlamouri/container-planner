@@ -31,6 +31,8 @@
           :max-container-dimensions="maxContainerDimensions"
           :bounding-container="boundingContainer"
           :is-plan-valid="isPlanValid"
+          :tolerance="tolerance"
+          @toleranceChanged="tolerance = $event"
         />
         <button @click="toggleFillAllContainers">
           Toggle Fill
@@ -135,28 +137,32 @@ export default {
       containers: [],
       fillAllContainers: false,
       shimGroups: {},
+      tolerance: 0,
     };
   },
   computed: {
     boundingContainer() {
-      if (!this.containersExist) {
-        return {};
-      }
-
-      const { x: left } = _.minBy(this.containers, 'x');
-      const { y: top } = _.minBy(this.containers, 'y');
+      const { x: left = 0 } = _.minBy(this.containers, 'x') || {};
+      const { y: top = 0 } = _.minBy(this.containers, 'y') || {};
       const right = _(this.containers)
         .map(({ x, width }) => x + width)
-        .max();
+        .max() || 0;
       const bottom = _(this.containers)
         .map(({ y, height }) => y + height)
-        .max();
+        .max() || 0;
+
+      const width = right - left;
+      const height = bottom - top;
 
       return {
         x: left,
         y: top,
-        width: right - left,
-        height: bottom - top,
+        width,
+        height,
+        withTolerance: {
+          width: width + this.tolerance,
+          height: height + this.tolerance,
+        },
       };
     },
     containersExist() {
@@ -171,6 +177,22 @@ export default {
       return {
         width: this.canvasDimensions.width / this.pixelsPerMm,
         height: this.canvasDimensions.height / this.pixelsPerMm,
+      };
+    },
+    plan() {
+      return {
+        containers: this.containers.map(_.partialRight(_.pick, ['x', 'y', 'width', 'height'])),
+        tolerance: this.tolerance,
+        boundingContainer: this.boundingContainer,
+        shimGroups: _.mapValues(this.shimGroups, ((group) => {
+          const leftEdge = _.minBy(group, 'x').x;
+          const topEdge = _.minBy(group, 'y').y;
+
+          return group.map(({ x, y }) => ({
+            x: x - leftEdge,
+            y: y - topEdge,
+          }));
+        })),
       };
     },
     selectedContainer() {
@@ -291,6 +313,9 @@ export default {
         .filter(({ inContainer }) => !inContainer)
         .groupBy('group')
         .value();
+
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify(this.plan, null, 2));
     },
     deleteContainer({ index, color }) {
       this.replaceColor(color);

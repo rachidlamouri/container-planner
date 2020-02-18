@@ -17,9 +17,10 @@
         :value="`${maxContainerDimensions.width} mm, ${maxContainerDimensions.height} mm`"
       />
       <label-value-group
-        v-model.number="tolerance"
         :is-input="true"
         label="Tolerance:"
+        :value="tolerance"
+        @input="$emit('toleranceChanged', parseFloat($event))"
       />
       <label-value-group
         :class="{ invalid: !isPlanValid }"
@@ -40,7 +41,6 @@
 </style>
 
 <script>
-import _ from 'lodash';
 import LabelValueGroup from './LabelValueGroup.vue';
 
 export default {
@@ -53,6 +53,10 @@ export default {
       required: true,
     },
     pixelsPerMm: {
+      type: Number,
+      required: true,
+    },
+    tolerance: {
       type: Number,
       required: true,
     },
@@ -69,15 +73,9 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      tolerance: 0,
-    };
-  },
   computed: {
     boundingContainerDisplayDimensions() {
-      const width = _.get(this.boundingContainer, 'width', 0) + this.tolerance;
-      const height = _.get(this.boundingContainer, 'height', 0) + this.tolerance;
+      const { width, height } = this.boundingContainer.withTolerance;
 
       return `${width} mm, ${height} mm`;
     },
