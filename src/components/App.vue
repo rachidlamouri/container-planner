@@ -137,7 +137,7 @@ export default {
       selectedIndex: 0,
       containers: [],
       fillAllContainers: false,
-      shimGroups: {},
+      shimGroups: [],
       tolerance: 0,
     };
   },
@@ -185,15 +185,12 @@ export default {
         containers: this.containers.map(_.partialRight(_.pick, ['x', 'y', 'width', 'height'])),
         tolerance: this.tolerance,
         boundingContainer: this.boundingContainer,
-        shimGroups: _.mapValues(this.shimGroups, ((group) => {
-          const leftEdge = _.minBy(group, 'x').x;
-          const topEdge = _.minBy(group, 'y').y;
-
-          return group.map(({ x, y }) => ({
-            x: x - leftEdge,
-            y: y - topEdge,
-          }));
-        })),
+        shimGroups: this.shimGroups.map((group) => (
+          group.map(({ x, y }) => ({
+            x,
+            y,
+          }))
+        )),
       };
     },
     selectedContainer() {
@@ -261,7 +258,7 @@ export default {
               x: x + colIndex,
               y: y + rowIndex,
               inContainer: false,
-              group: null,
+              groupId: null,
             };
           });
         });
@@ -284,7 +281,7 @@ export default {
         });
       });
 
-      const spreadGroup = (rowIndex, colIndex, groupNumber) => {
+      const spreadGroupId = (rowIndex, colIndex, groupNumber) => {
         const row = points[rowIndex];
 
         if (!row) {
@@ -293,15 +290,15 @@ export default {
 
         const point = row[colIndex];
 
-        if (!point || point.inContainer || point.group !== null) {
+        if (!point || point.inContainer || point.groupId !== null) {
           return;
         }
 
-        point.group = groupNumber;
-        spreadGroup(rowIndex - 1, colIndex, groupNumber); // up
-        spreadGroup(rowIndex + 1, colIndex, groupNumber); // down
-        spreadGroup(rowIndex, colIndex - 1, groupNumber); // left
-        spreadGroup(rowIndex, colIndex + 1, groupNumber); // right
+        point.groupId = groupNumber;
+        spreadGroupId(rowIndex - 1, colIndex, groupNumber); // up
+        spreadGroupId(rowIndex + 1, colIndex, groupNumber); // down
+        spreadGroupId(rowIndex, colIndex - 1, groupNumber); // left
+        spreadGroupId(rowIndex, colIndex + 1, groupNumber); // right
       };
 
       let groupCount = 0;
@@ -309,19 +306,20 @@ export default {
         _.range(points[rowIndex].length).forEach((colIndex) => {
           const point = points[rowIndex][colIndex];
 
-          if (point.inContainer || point.group !== null) {
+          if (point.inContainer || point.groupId !== null) {
             return;
           }
 
           groupCount += 1;
-          spreadGroup(rowIndex, colIndex, groupCount);
+          spreadGroupId(rowIndex, colIndex, groupCount);
         });
       });
 
       this.shimGroups = _(points)
         .flatten()
         .filter(({ inContainer }) => !inContainer)
-        .groupBy('group')
+        .groupBy('groupId')
+        .values()
         .value();
 
       // eslint-disable-next-line no-console
@@ -411,7 +409,7 @@ export default {
     },
     updateSelectedContainer(newContainer) {
       this.containers.splice(this.selectedIndex, 1, newContainer);
-      this.shimGroups = {};
+      this.shimGroups = [];
     },
   },
 };

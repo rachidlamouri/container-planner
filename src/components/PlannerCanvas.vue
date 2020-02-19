@@ -53,7 +53,7 @@ export default {
       required: true,
     },
     shimGroups: {
-      type: Object,
+      type: Array,
       required: true,
     },
   },
@@ -144,7 +144,8 @@ export default {
       this.ctx.strokeRect(...dimensions);
     },
     drawShimGroups() {
-      _.forEach(this.shimGroups, (group, groupId) => {
+      this.shimGroups.forEach((group, index) => {
+        const groupId = index + 1;
         const colorNumber = groupId * 2;
         const color = colorNumber < 10 ? `#${colorNumber}${colorNumber}${colorNumber}` : '#000';
         this.ctx.strokeStyle = color;
