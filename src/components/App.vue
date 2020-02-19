@@ -116,6 +116,7 @@ import NewContainerForm from './NewContainerForm.vue';
 import PlannerCanvas from './PlannerCanvas.vue';
 import ContainerHelpers from './ContainerHelpers.vue';
 import ComputedInfo from './ComputedInfo.vue';
+import initialPlan from '../initialPlan.json';
 
 export default {
   name: 'App',
@@ -198,6 +199,15 @@ export default {
     selectedContainer() {
       return this.containers[this.selectedIndex];
     },
+  },
+  created() {
+    const { containers, tolerance } = initialPlan;
+
+    this.tolerance = tolerance;
+
+    containers.forEach((dimensions) => {
+      this.addContainer(dimensions);
+    });
   },
   mounted() {
     document.addEventListener('keydown', ({ key }) => {
